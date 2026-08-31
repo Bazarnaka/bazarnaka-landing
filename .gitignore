@@ -12,3 +12,4 @@ next-env.d.ts
 # Document d'affaires, hors périmètre du dépôt de code.
 # La photo HD dont le site a besoin en est extraite dans public/rider-scooter.jpg.
 *.pdf
+.vercel

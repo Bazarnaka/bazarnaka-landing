@@ -47,13 +47,62 @@ async function saveToFile(entry: WaitlistEntry): Promise<void> {
   await appendFile(FILE_PATH, `${JSON.stringify(entry)}\n`, "utf8");
 }
 
-// TODO(waitlist): brancher Brevo.
-// POST https://api.brevo.com/v3/contacts avec l'en-tête `api-key: BREVO_API_KEY`,
-// body { email, listIds: [Number(BREVO_LIST_ID)], updateEnabled: true }.
-// Traiter le code 400 `duplicate_parameter` comme un succès (email déjà inscrit).
-async function saveToBrevo(_entry: WaitlistEntry): Promise<void> {
+/** Lit une variable d'environnement obligatoire, avec un message actionnable. */
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `${name} est absente. Renseignez-la dans les variables d'environnement (voir .env.example).`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Ajoute le contact à une liste Brevo.
+ *
+ * Aucun attribut personnalisé n'est envoyé : avec `updateEnabled`, Brevo rejette
+ * un attribut qui n'a pas été déclaré au préalable dans le compte. La date
+ * d'inscription est de toute façon enregistrée par Brevo lui-même.
+ */
+async function saveToBrevo(entry: WaitlistEntry): Promise<void> {
+  const apiKey = requireEnv("BREVO_API_KEY");
+  const listId = Number(requireEnv("BREVO_LIST_ID"));
+
+  if (!Number.isInteger(listId)) {
+    throw new Error("BREVO_LIST_ID doit être l'identifiant numérique de la liste.");
+  }
+
+  const response = await fetch("https://api.brevo.com/v3/contacts", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      email: entry.email,
+      listIds: [listId],
+      updateEnabled: true,
+    }),
+    // Sans délai maximal, un appel qui traîne bloquerait la fonction serverless
+    // jusqu'à son propre timeout, et l'utilisateur resterait sur « Envoi… ».
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (response.ok) return;
+
+  const body = (await response.json().catch(() => null)) as {
+    code?: string;
+    message?: string;
+  } | null;
+
+  // Un email déjà inscrit n'est pas une erreur pour l'utilisateur : il a bien
+  // manifesté son intérêt, et il est déjà dans la liste.
+  if (response.status === 400 && body?.code === "duplicate_parameter") return;
+
   throw new Error(
-    "WAITLIST_PROVIDER=brevo : intégration non implémentée (voir le TODO dans src/lib/waitlist-store.ts)",
+    `Brevo a répondu ${response.status} : ${body?.code ?? "erreur inconnue"} — ${body?.message ?? ""}`.trim(),
   );
 }
 
