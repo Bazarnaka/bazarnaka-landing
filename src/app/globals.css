@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   Design tokens — Bazar Nakà
+   Source : design_handoff_landing/README.md § « Design Tokens »
+   --------------------------------------------------------------- */
+@theme {
+  /* Couleurs de marque */
+  --color-brand: #d75448;
+  --color-brand-hover: #b93e38;
+  --color-orange: #ee8140;
+  --color-yellow: #f9c74a;
+
+  /* Dégradé principal */
+  --color-plum: #8e3b57;
+  --color-rose: #c9455a;
+  --color-gradient-red: #d95441;
+
+  /* Crèmes */
+  --color-cream: #ffe9b5;
+  --color-cream-bg: #fffbf2;
+  --color-cream-border: #efe3ce;
+  --color-input-border: #e4d9c6;
+
+  /* Encres */
+  --color-ink: #1c1b1a;
+  --color-ink-secondary: #4a4441;
+  --color-ink-tertiary: #6b635f;
+  --color-ink-muted: #9a918c;
+
+  /* Typographie — Outfit partout, DM Mono pour eyebrows / chiffres / mentions */
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+
+  /* Ombres */
+  --shadow-input: 0 2px 14px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 2px 10px rgb(0 0 0 / 0.07);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    /* Évite un liseré blanc en overscroll : teinte médiane du dégradé. */
+    background-color: var(--color-gradient-red);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Dégradé du splash — desktop (118deg) et mobile (155deg). */
+@utility bg-splash {
+  background-image: linear-gradient(
+    155deg,
+    #8e3b57 0%,
+    #c9455a 20%,
+    #d95441 48%,
+    #ee8140 76%,
+    #f9c74a 100%
+  );
+}
+
+@utility bg-splash-wide {
+  background-image: linear-gradient(
+    118deg,
+    #8e3b57 0%,
+    #c9455a 22%,
+    #d95441 46%,
+    #ee8140 72%,
+    #f9c74a 100%
+  );
+}
+
+/* Trame de points décorative, derrière le filigrane. */
+@utility bg-dotgrid {
+  background-image: radial-gradient(
+    circle,
+    rgb(255 255 255 / 0.14) 1.4px,
+    transparent 1.4px
+  );
+  background-size: 34px 34px;
+}
+
+/* Entrée du bloc central : fade-in + translateY(12px), 500ms. */
+@utility motion-rise {
+  animation: naka-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Logotype décoratif : balayage gauche→droite, ligne par ligne, comme une
+   écriture progressive. clip-path plutôt que SVG stroke-dasharray : la longueur
+   d'un <text> n'est pas mesurable, et l'ordre de tracé par contour de glyphe est
+   erratique sur une linéale géométrique. Le délai est porté par une classe
+   utilitaire côté composant. */
+@utility motion-write {
+  animation: naka-write 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Astérisque : apparaît en dernier, comme une signature. La rotation de -45°
+   correspond exactement au pas de symétrie des 8 pétales : la marque se cale
+   sur elle-même en fin de course. */
+@utility motion-mark {
+  animation: naka-mark 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes naka-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes naka-mark {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes naka-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

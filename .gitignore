@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+.data/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# Document d'affaires, hors périmètre du dépôt de code.
+# La photo HD dont le site a besoin en est extraite dans public/rider-scooter.jpg.
+*.pdf
